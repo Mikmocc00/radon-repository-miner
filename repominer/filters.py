@@ -23,3 +23,9 @@ def is_tosca_file(path: str, content: str = None) -> bool:
         return re.match(r'^tosca_definitions_version\s*:.+', content) is not None
 
     return path and ('test' not in path) and any(path.endswith(ext) for ext in ['.tosca', '.tosca.yaml', '.tosca.yml'])
+
+def is_terraform_file(path: str, content: str = None) -> bool:
+    """
+    Check whether the path is a Terraform file
+    """
+    return path and path.endswith(".tf")
