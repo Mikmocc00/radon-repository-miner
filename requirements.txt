@@ -6,4 +6,4 @@ pydriller~=2.5
 pyyaml~=6.0.1
 spacy~=2.3.4
 tosca-metrics~=0.0.8
-git+https://github.com/Mikmocc00/radon-terraform-metrics.git
+

@@ -15,6 +15,9 @@ RUN apt-get install git -y
 COPY . /app
 WORKDIR /app
 
+# Install Git dependencies separately
+RUN pip install git+https://github.com/Mikmocc00/radon-terraform-metrics.git
+
 # Install dependencies
 RUN pip install -r requirements.txt
 
