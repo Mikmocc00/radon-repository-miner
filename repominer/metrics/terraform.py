@@ -1,6 +1,6 @@
 from .base import BaseMetricsExtractor
 from repominer.filters import is_terraform_file
-from import_metrics import general_metrics, configuration_metrics
+from radon_terraform_metrics.import_metrics import general_metrics, configuration_metrics
 
 # Metti qui solo le metriche che vuoi davvero calcolare
 METRICS_TO_COMPUTE = tuple(configuration_metrics.keys()) + tuple(general_metrics.keys())
