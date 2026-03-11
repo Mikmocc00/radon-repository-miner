@@ -16,8 +16,8 @@ COPY . /app
 WORKDIR /app
 
 # Install Git dependencies separately
-RUN git clone https://github.com/Mikmocc00/radon-terraform-metrics.git
-ENV PYTHONPATH="/app/radon-terraform-metrics:${PYTHONPATH}"
+RUN git clone https://github.com/Mikmocc00/radon-terraform-metrics.git \
+    && cp -r radon-terraform-metrics/* /usr/local/lib/python3.8/dist-packages/
 # Install dependencies
 RUN pip install -r requirements.txt
 
