@@ -7,3 +7,4 @@ pyyaml~=6.0.1
 spacy~=2.3.4
 tosca-metrics~=0.0.8
 python-hcl2>=3.0.0,<4.0.0
+git+https://github.com/Mikmocc00/radon-terraform-metrics.git
