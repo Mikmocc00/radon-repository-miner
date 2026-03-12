@@ -35,5 +35,8 @@ setup(name='repository-miner',
           "Topic :: Software Development :: Libraries :: Python Modules",
           "Operating System :: POSIX :: Linux"
       ],
-      install_requires=requirements
+      install_requires=[
+          requirements,
+          "radon-terraform-metrics @ git+https://github.com/Mikmocc00/radon-terraform-metrics.git"
+      ]
 )
