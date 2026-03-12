@@ -1,86 +1,119 @@
 import hcl2
-from typing import List
-from pydriller.repository import Repository
+from typing import List, Any
+
 from pydriller.domain.commit import ModificationType
 
-from repominer import filters, utils
+from repominer import utils
 from repominer.mining.base import BaseMiner, FixingCommitClassifier
 
-# Definiamo le "chiavi principali" dei file Terraform da monitorare
-CONFIG_TERRAFORM_KEYS = ['resource', 'module', 'variable', 'output', 'provider', 'data', 'locals']
+
+CONFIG_TERRAFORM_KEYS = [
+    "resource",
+    "module",
+    "variable",
+    "output",
+    "provider",
+    "data",
+    "locals",
+]
+
 
 class TerraformMiner(BaseMiner):
-    """Estende BaseMiner per mining di repository Terraform"""
+    """Extends BaseMiner to mine Terraform-based repositories."""
 
     def __init__(self, url_to_repo: str, clone_repo_to: str, branch: str = None):
         super().__init__(url_to_repo, clone_repo_to, branch)
         self.FixingCommitClassifier = TerraformFixingCommitClassifier
 
-    def ignore_file(self, path_to_file: str, content: str = None):
-        """Ignora file non Terraform (.tf)"""
-        return not path_to_file.endswith('.tf')
+    def ignore_file(self, path_to_file: str, content: str = None) -> bool:
+        """Ignore non-Terraform files."""
+        return not path_to_file.endswith(".tf")
 
 
 class TerraformFixingCommitClassifier(FixingCommitClassifier):
-    """Classifica commit che modificano file Terraform rilevanti"""
+    """Classifies bug-fixing commits in Terraform files."""
+
+    # -------------------------
+    # Utility helpers
+    # -------------------------
+
+    def _parse_hcl(self, code: str) -> dict:
+        """Safely parse HCL code."""
+        if not code:
+            return {}
+
+        try:
+            return hcl2.loads(code)
+        except Exception:
+            return {}
+
+    def _extract_blocks(self, parsed_code: dict, keys: List[str]) -> List[Any]:
+        """Extract specific Terraform blocks."""
+        return [
+            value
+            for key, value in utils.key_value_list(parsed_code)
+            if key in keys
+        ]
+
+    def _terraform_files(self):
+        """Yield modified Terraform files."""
+        for modified_file in self.commit.modified_files:
+
+            if (
+                    modified_file.change_type == ModificationType.MODIFY
+                    and modified_file.new_path
+                    and modified_file.new_path.endswith(".tf")
+            ):
+                yield modified_file
+
+    def _is_block_changed(self, keys: List[str]) -> bool:
+        """Generic comparison for Terraform blocks."""
+
+        for modified_file in self._terraform_files():
+
+            code_before = self._parse_hcl(modified_file.source_code_before)
+            code_after = self._parse_hcl(modified_file.source_code)
+
+            blocks_before = self._extract_blocks(code_before, keys)
+            blocks_after = self._extract_blocks(code_after, keys)
+
+            if blocks_before != blocks_after:
+                return True
+
+        return False
+
+    # -------------------------
+    # Public classification API
+    # -------------------------
 
     def is_data_changed(self) -> bool:
-        """Controlla se sono cambiati blocchi significativi (resource/module/variable/output...)"""
-        for modified_file in self.commit.modified_files:
-            if modified_file.change_type != ModificationType.MODIFY or not modified_file.new_path.endswith('.tf'):
-                continue
-
-            try:
-                code_before = hcl2.loads(modified_file.source_code_before) if modified_file.source_code_before else {}
-                code_after = hcl2.loads(modified_file.source_code) if modified_file.source_code else {}
-
-                data_before = [value for key, value in utils.key_value_list(code_before) if key in CONFIG_TERRAFORM_KEYS]
-                data_after = [value for key, value in utils.key_value_list(code_after) if key in CONFIG_TERRAFORM_KEYS]
-
-                return data_before != data_after
-
-            except Exception:
-                # HCL malformato o errore di parsing -> ignora
-                pass
-
-        return False
+        """Check if Terraform configuration blocks changed."""
+        return self._is_block_changed(CONFIG_TERRAFORM_KEYS)
 
     def is_module_changed(self) -> bool:
-        """Controlla se sono cambiati i blocchi module"""
-        for modified_file in self.commit.modified_files:
-            if modified_file.change_type != ModificationType.MODIFY or not modified_file.new_path.endswith('.tf'):
-                continue
-
-            try:
-                code_before = hcl2.loads(modified_file.source_code_before) if modified_file.source_code_before else {}
-                code_after = hcl2.loads(modified_file.source_code) if modified_file.source_code else {}
-
-                modules_before = [value for key, value in utils.key_value_list(code_before) if key == 'module']
-                modules_after = [value for key, value in utils.key_value_list(code_after) if key == 'module']
-
-                return modules_before != modules_after
-
-            except Exception:
-                pass
-
-        return False
+        """Check if module blocks changed."""
+        return self._is_block_changed(["module"])
 
     def is_resource_changed(self) -> bool:
-        """Controlla se sono cambiati i blocchi resource"""
-        for modified_file in self.commit.modified_files:
-            if modified_file.change_type != ModificationType.MODIFY or not modified_file.new_path.endswith('.tf'):
-                continue
+        """Check if resource blocks changed."""
+        return self._is_block_changed(["resource"])
 
-            try:
-                code_before = hcl2.loads(modified_file.source_code_before) if modified_file.source_code_before else {}
-                code_after = hcl2.loads(modified_file.source_code) if modified_file.source_code else {}
+    def is_locals_changed(self) -> bool:
+        """Check if locals blocks changed."""
+        return self._is_block_changed(["locals"])
 
-                resources_before = [value for key, value in utils.key_value_list(code_before) if key == 'resource']
-                resources_after = [value for key, value in utils.key_value_list(code_after) if key == 'resource']
+    def is_provider_changed(self) -> bool:
+        """Check if provider blocks changed."""
+        return self._is_block_changed(["provider"])
 
-                return resources_before != resources_after
+    def is_datasource_changed(self) -> bool:
+        """Check if data blocks changed."""
+        return self._is_block_changed(["data"])
 
-            except Exception:
-                pass
+    def is_output_changed(self) -> bool:
+        """Check if output blocks changed."""
+        return self._is_block_changed(["output"])
 
-        return False
+    def is_variable_changed(self) -> bool:
+        """Check if variable blocks changed."""
+        return self._is_block_changed(["variable"])
