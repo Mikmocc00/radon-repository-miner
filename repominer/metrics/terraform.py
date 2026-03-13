@@ -23,4 +23,8 @@ class TerraformMetricsExtractor(BaseMetricsExtractor):
         return results
 
     def ignore_file(self, path_to_file: str, content: str = None):
-        return not is_terraform_file(path_to_file)
+        return not (
+                path_to_file.endswith('.tf')
+                or path_to_file.endswith('.tfvars')
+                or path_to_file.endswith('.tf.json')
+        )
