@@ -1,4 +1,5 @@
 import hcl2
+import re
 from typing import Set, Tuple
 from pydriller.domain.commit import ModificationType
 
@@ -13,8 +14,21 @@ IGNORED_ATTRIBUTES = {
     "comment"
 }
 
-
 DATA_KEYS = ["variable", "locals", "output"]
+
+
+# Terraform bug keywords
+TERRAFORM_DEFECT_KEYWORDS = {
+    "fix", "bug", "error", "issue", "fail",
+    "failure", "crash", "incorrect", "wrong",
+    "invalid", "broken"
+}
+
+TERRAFORM_CONTEXT_KEYWORDS = {
+    "provider", "module", "resource",
+    "variable", "output", "state",
+    "plan", "apply", "dependency"
+}
 
 
 class TerraformMiner(BaseMiner):
@@ -32,6 +46,23 @@ class TerraformMiner(BaseMiner):
 
 
 class TerraformFixingCommitClassifier(FixingCommitClassifier):
+
+    # -----------------------------
+    # linguistic detection
+    # -----------------------------
+
+    def _has_terraform_bug_pattern(self, sentence: str) -> bool:
+
+        sentence = sentence.lower()
+
+        has_bug = any(k in sentence for k in TERRAFORM_DEFECT_KEYWORDS)
+        has_context = any(k in sentence for k in TERRAFORM_CONTEXT_KEYWORDS)
+
+        return has_bug and has_context
+
+    def _has_issue_reference(self, sentence: str) -> bool:
+
+        return bool(re.search(r"(fix(e[sd])?|close[sd]?|resolve[sd]?)\s+#\d+", sentence.lower()))
 
     # -----------------------------
     # parsing
@@ -115,7 +146,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
         return data
 
     # -----------------------------
-    # classification methods
+    # semantic change detection
     # -----------------------------
 
     def is_data_changed(self) -> bool:
@@ -210,3 +241,69 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
                 return True
 
         return False
+
+    # -----------------------------
+    # semantic bug detection
+    # -----------------------------
+
+    def fixes_terraform_semantic(self) -> bool:
+
+        if self.is_resource_changed():
+            return True
+
+        if self.is_module_changed():
+            return True
+
+        if self.is_data_changed():
+            return True
+
+        return False
+
+    # -----------------------------
+    # override base classifiers
+    # -----------------------------
+
+    def fixes_configuration_data(self):
+
+        if self.is_data_changed():
+            return True
+
+        for sentence in self.sentences:
+
+            sentence = ' '.join(sentence)
+
+            if self._has_terraform_bug_pattern(sentence):
+                return True
+
+            if self._has_issue_reference(sentence):
+                return True
+
+        return super().fixes_configuration_data()
+
+    def fixes_dependency(self):
+
+        if self.is_module_changed():
+            return True
+
+        for sentence in self.sentences:
+
+            sentence = ' '.join(sentence)
+
+            if self._has_terraform_bug_pattern(sentence):
+                return True
+
+        return super().fixes_dependency()
+
+    def fixes_service(self):
+
+        if self.is_resource_changed():
+            return True
+
+        for sentence in self.sentences:
+
+            sentence = ' '.join(sentence)
+
+            if self._has_terraform_bug_pattern(sentence):
+                return True
+
+        return super().fixes_service()
