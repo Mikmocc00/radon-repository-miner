@@ -29,3 +29,19 @@ def is_terraform_file(path: str, content: str = None) -> bool:
     Check whether the path is a Terraform file
     """
     return path and path.endswith(".tf")
+
+
+def is_kubernetes_file(path: str, content: str = None) -> bool:
+    """
+    Check whether the path is a Kubernetes file
+    """
+    # Controlla l'estensione e ignora le cartelle di test
+    if not path or 'test/' in path or not (path.endswith('.yaml') or path.endswith('.yml')):
+        return False
+
+    if content:
+        has_api = re.search(r'^apiVersion\s*:.+', content, re.MULTILINE) is not None
+        has_kind = re.search(r'^kind\s*:.+', content, re.MULTILINE) is not None
+        return has_api and has_kind
+
+    return True
