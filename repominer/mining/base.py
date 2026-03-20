@@ -150,9 +150,9 @@ class BaseMiner:
         self.sort_commits(commits)
 
         for commit in Repository(self.path_to_repo,
-                                 from_commit=commits[0],  # first commit in commits
-                                 to_commit=commits[-1],  # last commit in commits
                                  only_in_branch=self.branch).traverse_commits():
+            if commit.hash not in commits:
+                continue
             i = 0
 
             # if none of the modified files is a Ansible file then discard the commit
