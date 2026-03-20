@@ -51,7 +51,6 @@ class KubernetesMiner(BaseMiner):
 # -----------------------------
 
 class KubernetesFixingCommitClassifier(FixingCommitClassifier):
-
     # -----------------------------
     # LINGUISTIC DETECTION
     # -----------------------------
