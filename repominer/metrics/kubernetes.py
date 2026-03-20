@@ -1,10 +1,10 @@
 from .base import BaseMetricsExtractor
 from repominer.filters import is_kubernetes_file
-from radon_kubernetes_metrics.import_metrics import general_metrics, configuration_metrics
+from radon_kubernetes_metrics.import_metrics import general_metrics, manifest_metrics
 
 
 # Unione metriche
-ALL_METRICS = {**general_metrics, **configuration_metrics}
+ALL_METRICS = {**general_metrics, **manifest_metrics}
 METRICS_TO_COMPUTE = tuple(ALL_METRICS.keys())
 
 
