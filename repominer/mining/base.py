@@ -127,11 +127,6 @@ class BaseMiner:
 
         self.FixingCommitClassifier = FixingCommitClassifier
 
-    def is_valid_commit(self):
-        if not self.commit.modified_files:
-            return False
-        return True
-
     def discard_undesired_fixing_commits(self, commits: List[str]) -> None:
         """
         Discard undesired commits.
@@ -149,37 +144,25 @@ class BaseMiner:
 
         """
 
-        if not commits or len(commits) < 2:
+        if not commits:
             return
 
         self.sort_commits(commits)
 
-        try:
-            repo = Repository(
-                self.path_to_repo,
-                from_commit=commits[0],
-                to_commit=commits[-1],
-                only_in_branch=self.branch
-            )
-        except Exception:
-            return
-
-        for commit in repo.traverse_commits():
+        for commit in Repository(self.path_to_repo,
+                                 from_commit=commits[0],  # first commit in commits
+                                 to_commit=commits[-1],  # last commit in commits
+                                 only_in_branch=self.branch).traverse_commits():
             i = 0
 
             # if none of the modified files is a Ansible file then discard the commit
             while i < len(commit.modified_files):
-                mf = commit.modified_files[i]
-
-                if mf.change_type != ModificationType.MODIFY:
+                if commit.modified_files[i].change_type != ModificationType.MODIFY:
                     i += 1
-                    continue
-
-                if self.ignore_file(mf.new_path, mf.source_code):
+                elif self.ignore_file(commit.modified_files[i].new_path, commit.modified_files[i].source_code):
                     i += 1
-                    continue
-
-                break
+                else:
+                    break
 
             if i == len(commit.modified_files) and commit.hash in commits:
                 commits.remove(commit.hash)
@@ -213,8 +196,7 @@ class BaseMiner:
                 continue
 
             fcc = self.FixingCommitClassifier(commit)
-            if not fcc.is_valid_commit():
-                continue
+
             if fcc.fixes_conditional():
                 commits_labels.setdefault(commit.hash, []).append('CONDITIONAL')
             if fcc.fixes_configuration_data():
@@ -237,8 +219,7 @@ class BaseMiner:
 
         if commits:
             # Discard commits that do not touch IaC files
-            if len(commits) > 1:
-                self.discard_undesired_fixing_commits(commits)
+            self.discard_undesired_fixing_commits(commits)
 
             # Update the list of fixing commits
             self.fixing_commits.extend(commits)
