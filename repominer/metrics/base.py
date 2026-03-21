@@ -209,30 +209,19 @@ class BaseMetricsExtractor:
                 product: bool = True,
                 process: bool = True,
                 delta: bool = False):
-        """ Extract metrics from labeled files.
+        """ Extract metrics from labeled files. """
 
-        Parameters
-        ----------
-        labeled_files : List[FailureProneFile]
-            The list of FailureProneFile objects that are used to label a script as failure-prone (1) or clean (0).
-        product: bool
-            Whether to extract product metrics.
-        process: bool
-            Whether to extract process metrics.
-        delta: bool
-            Whether to extract delta metrics between two successive releases or commits.
+        labeled_set = {(f.filepath, f.commit) for f in labeled_files}
 
-        """
-        self.dataset = pd.DataFrame()
+        dataset_rows = []
+
         git_repo = Git(self.path_to_repo)
-
         metrics_previous_release = dict()  # Values for iac metrics in the last release
 
         for commit in Repository(self.path_to_repo, order='date-order', num_workers=1).traverse_commits():
 
             # To handle renaming in metrics_previous_release
             for modified_file in commit.modified_files:
-
                 old_path = modified_file.old_path
                 new_path = modified_file.new_path
 
@@ -261,11 +250,7 @@ class BaseMetricsExtractor:
                 if not file_content or self.ignore_file(filepath, file_content):
                     continue
 
-                tmp = FailureProneFile(filepath=filepath, commit=commit.hash, fixing_commit='')
-                if tmp not in labeled_files:
-                    label = 0  # clean
-                else:
-                    label = 1  # failure-prone
+                label = 1 if (filepath, commit.hash) in labeled_set else 0
 
                 metrics = dict(
                     filepath=filepath,
@@ -311,9 +296,11 @@ class BaseMetricsExtractor:
                     metrics_previous_release[filepath] = metrics.copy()
                     metrics.update(delta_metrics)
 
-                self.dataset = self.dataset.append(metrics, ignore_index=True)
+                dataset_rows.append(metrics)
 
             git_repo.reset()
+
+        self.dataset = pd.DataFrame(dataset_rows)
 
     def ignore_file(self, path_to_file: str, content: str = None):
         return False
