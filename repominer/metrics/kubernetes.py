@@ -42,12 +42,14 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
         dataset_rows = []
         product_cache = {}
 
-        # 🚀 FIX: rimosso only_releases=True! Dobbiamo leggere tutti i commit
         repo = Repository(self.path_to_repo, order='date-order')
+
+        total_commits = len(self.commits_at)
+        processed_commits = 0
 
         for commit in repo.traverse_commits():
 
-            # 1. AGGIORNAMENTO CACHE (Ad ogni commit aggiorniamo la nostra visione dei file)
+            # 1. Aggiornamento Cache
             for m_file in commit.modified_files:
                 path = m_file.new_path or m_file.old_path
 
@@ -56,11 +58,14 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
                 elif is_kubernetes_file(path, m_file.source_code):
                     product_cache[path] = self.get_product_metrics(m_file.source_code)
 
-            # 2. FILTRO COMMIT: Se questo non è un commit di cui ci interessano le metriche, saltiamo
             if commit.hash not in self.commits_at:
                 continue
 
-            # 3. METRICHE DI PROCESSO
+            processed_commits += 1
+            if total_commits > 0:
+                percentuale = (processed_commits / total_commits) * 100
+                print(f"[ESTRAZIONE] Progresso: {processed_commits}/{total_commits} ({percentuale:.1f}%) - Commit {commit.hash[:8]}", flush=True)
+
             process_metrics = {}
             if process:
                 try:
@@ -70,7 +75,6 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
                 except ValueError:
                     continue
 
-            # 4. CREAZIONE RIGHE DATASET
             for filepath, p_metrics in product_cache.items():
                 label = 1 if (filepath, commit.hash) in labeled_set else 0
 
