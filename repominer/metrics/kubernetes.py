@@ -3,7 +3,7 @@ from repominer.filters import is_kubernetes_file
 from radon_kubernetes_metrics.import_metrics import general_metrics, manifest_metrics
 import pandas as pd
 from pydriller import Repository, ModificationType
-from ..utils import ParsedManifest
+from radon_kubernetes_metrics.utils import ParsedManifest
 
 METRICS_TO_COMPUTE = tuple(manifest_metrics.keys()) + tuple(general_metrics.keys())
 
