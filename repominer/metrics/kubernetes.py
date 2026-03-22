@@ -1,13 +1,11 @@
 from .base import BaseMetricsExtractor
 from repominer.filters import is_kubernetes_file
 from radon_kubernetes_metrics.import_metrics import general_metrics, manifest_metrics
-
-METRICS_TO_COMPUTE = tuple(manifest_metrics.keys()) + tuple(general_metrics.keys())
-
-
 import pandas as pd
 from pydriller import Repository, ModificationType
-from .utils import ParsedManifest
+from ..utils import ParsedManifest
+
+METRICS_TO_COMPUTE = tuple(manifest_metrics.keys()) + tuple(general_metrics.keys())
 
 class KubernetesMetricsExtractor(BaseMetricsExtractor):
 
