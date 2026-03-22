@@ -37,26 +37,30 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
 
         return results
 
-    # FIX 1: Aggiunto delta=False alla firma del metodo
     def extract(self, labeled_files, product=True, process=True, delta=False):
         labeled_set = {(f.filepath, f.commit) for f in labeled_files}
         dataset_rows = []
         product_cache = {}
 
-        repo = Repository(self.path_to_repo, only_releases=True, order='date-order')
+        # 🚀 FIX: rimosso only_releases=True! Dobbiamo leggere tutti i commit
+        repo = Repository(self.path_to_repo, order='date-order')
 
         for commit in repo.traverse_commits():
 
+            # 1. AGGIORNAMENTO CACHE (Ad ogni commit aggiorniamo la nostra visione dei file)
             for m_file in commit.modified_files:
                 path = m_file.new_path or m_file.old_path
 
                 if m_file.change_type == ModificationType.DELETE:
                     product_cache.pop(path, None)
-
-                # FIX 2: Tolto il "self." davanti a is_kubernetes_file
                 elif is_kubernetes_file(path, m_file.source_code):
                     product_cache[path] = self.get_product_metrics(m_file.source_code)
 
+            # 2. FILTRO COMMIT: Se questo non è un commit di cui ci interessano le metriche, saltiamo
+            if commit.hash not in self.commits_at:
+                continue
+
+            # 3. METRICHE DI PROCESSO
             process_metrics = {}
             if process:
                 try:
@@ -66,6 +70,7 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
                 except ValueError:
                     continue
 
+            # 4. CREAZIONE RIGHE DATASET
             for filepath, p_metrics in product_cache.items():
                 label = 1 if (filepath, commit.hash) in labeled_set else 0
 
