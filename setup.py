@@ -39,6 +39,6 @@ setup(name='repository-miner',
           requirements,
           "radon-terraform-metrics @ git+https://github.com/Mikmocc00/radon-terraform-metrics.git",
           "radon-kubernetes-metrics @ git+https://github.com/Mikmocc00/radon-kubernetes-metrics.git",
-          "radon-kubernetes-metrics @ git+https://github.com/Mikmocc00/radon-docker-metrics.git"
+          "radon-docker-metrics @ git+https://github.com/Mikmocc00/radon-docker-metrics.git"
       ]
 )
