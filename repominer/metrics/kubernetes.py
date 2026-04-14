@@ -5,7 +5,33 @@ import pandas as pd
 from pydriller import Repository, ModificationType
 from radon_kubernetes_metrics.utils import ParsedManifest
 
-METRICS_TO_COMPUTE = tuple(manifest_metrics.keys()) + tuple(general_metrics.keys())
+METRICS_TO_COMPUTE = (
+'config_entropy',
+    'avg_fields_per_resource',
+    'num_labels',
+    'num_total_fields',
+    'nested_object_ratio',
+    'num_resources',
+    'num_tolerations',
+    'additions_max',
+    'manifest_structural_complexity',
+    'change_set_avg',
+    'num_persistent_volumes',
+    'additions_avg',
+    'num_configmaps',
+    'num_affinity_rules',
+    'num_node_selectors',
+    'num_ports',
+    'change_set_max',
+    'deletions',
+    'num_resource_limits',
+    'num_containers',
+    'num_hardcoded_values',
+    'minor_contributors_count',
+    'num_image_pull_policy_always',
+    'num_latest_tag',
+    'num_capabilities_added'
+)
 
 class KubernetesMetricsExtractor(BaseMetricsExtractor):
 
@@ -15,25 +41,28 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
 
         results = {}
 
-        # 1. Eseguiamo le metriche generali
-        for name, metric_class in general_metrics.items():
-            try:
-                results[name] = metric_class(script).count()
-            except Exception:
-                results[name] = 0
+        all_metrics = {**general_metrics, **manifest_metrics}
 
-        # 2. Creiamo l'oggetto ottimizzato per YAML UNA SOLA VOLTA
         try:
             manifest_wrapper = ParsedManifest(script)
         except Exception:
-            return results
+            manifest_wrapper = None
 
-        # 3. Eseguiamo le metriche manifest
-        for name, metric_class in manifest_metrics.items():
+        for metric_name in METRICS_TO_COMPUTE:
+            metric_class = all_metrics.get(metric_name)
+
+            if not metric_class:
+                continue
+
             try:
-                results[name] = metric_class(manifest_wrapper).count()
+                if metric_name in manifest_metrics and manifest_wrapper is not None:
+                    results[metric_name] = metric_class(manifest_wrapper).count()
+
+                else:
+                    results[metric_name] = metric_class(script).count()
+
             except Exception:
-                results[name] = 0
+                results[metric_name] = 0
 
         return results
 
@@ -49,7 +78,6 @@ class KubernetesMetricsExtractor(BaseMetricsExtractor):
 
         for commit in repo.traverse_commits():
 
-            # 1. Aggiornamento Cache
             for m_file in commit.modified_files:
                 path = m_file.new_path or m_file.old_path
 
