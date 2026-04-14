@@ -1,6 +1,6 @@
 from .base import BaseMetricsExtractor
 from repominer.filters import is_terraform_file
-from radon_terraform_metrics.import_metrics import general_metrics, configuration_metrics
+from radon_terraform_metrics.import_metrics import general_metrics, configuration_metrics, complex_metrics
 
 METRICS_TO_COMPUTE = (
     'lines_code',
@@ -43,7 +43,7 @@ class TerraformMetricsExtractor(BaseMetricsExtractor):
     def get_product_metrics(self, script: str) -> dict:
         results = {}
 
-        all_metrics = {**general_metrics, **configuration_metrics}
+        all_metrics = {**general_metrics, **configuration_metrics, **complex_metrics}
 
         for metric_name in METRICS_TO_COMPUTE:
             metric_class = all_metrics[metric_name]
