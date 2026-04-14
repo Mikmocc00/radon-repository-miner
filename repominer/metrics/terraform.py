@@ -27,7 +27,15 @@ METRICS_TO_COMPUTE = (
     'deletions',
     'code_churn_count',
     'additions_avg',
-    'highest_contributor_experience'
+    'highest_contributor_experience',
+    'complexity_score',
+    'resource_sprawl',
+    'avg_block_verbosity',
+    'coupling_score',
+    'key_density',
+    'modularity_score',
+    'resource_concentration',
+    'vocabulary_richness'
 )
 
 class TerraformMetricsExtractor(BaseMetricsExtractor):
