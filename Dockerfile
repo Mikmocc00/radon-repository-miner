@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 MAINTAINER Stefano Dalla Palma
 
@@ -18,6 +18,7 @@ WORKDIR /app
 # Install Git dependencies separately
 RUN pip install git+https://github.com/Mikmocc00/radon-terraform-metrics.git
 RUN pip install git+https://github.com/Mikmocc00/radon-kubernetes-metrics.git
+RUN pip install git+https://github.com/Mikmocc00/radon-docker-metrics.git
 # Install dependencies
 RUN pip install -r requirements.txt
 

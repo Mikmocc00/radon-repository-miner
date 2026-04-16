@@ -106,6 +106,10 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
     # semantic change detection
     # -----------------------------
 
+    # -----------------------------
+    # semantic change detection
+    # -----------------------------
+
     def is_service_changed(self) -> bool:
         """Checks if the actual structure or kind of the resource changed."""
         for modified_file in self.commit.modified_files:
@@ -115,12 +119,20 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            # Use the filter to check if it's a k8s file
-            if not filters.is_kubernetes_file(path, modified_file.source_code):
+            # FIX: Intercettiamo i file mancanti (sottomoduli, Git LFS o commit corrotti)
+            try:
+                source_code = modified_file.source_code
+                source_code_before = modified_file.source_code_before
+            except ValueError:
+                # Se l'hash non viene risolto, ignoriamo il file e passiamo al prossimo
                 continue
 
-            code_before = self._parse_yaml_docs(modified_file.source_code_before)
-            code_after = self._parse_yaml_docs(modified_file.source_code)
+            # Usa le variabili appena estratte al posto di richiamare le property
+            if not filters.is_kubernetes_file(path, source_code):
+                continue
+
+            code_before = self._parse_yaml_docs(source_code_before)
+            code_after = self._parse_yaml_docs(source_code)
 
             kinds_before = self._extract_kinds(code_before)
             kinds_after = self._extract_kinds(code_after)
@@ -139,11 +151,20 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            if not filters.is_kubernetes_file(path, modified_file.source_code):
+            # FIX: Intercettiamo i file mancanti (sottomoduli, Git LFS o commit corrotti)
+            try:
+                source_code = modified_file.source_code
+                source_code_before = modified_file.source_code_before
+            except ValueError:
+                # Se l'hash non viene risolto, ignoriamo il file e passiamo al prossimo
                 continue
 
-            code_before = self._parse_yaml_docs(modified_file.source_code_before)
-            code_after = self._parse_yaml_docs(modified_file.source_code)
+            # Usa le variabili appena estratte al posto di richiamare le property
+            if not filters.is_kubernetes_file(path, source_code):
+                continue
+
+            code_before = self._parse_yaml_docs(source_code_before)
+            code_after = self._parse_yaml_docs(source_code)
 
             images_before = self._extract_images(code_before)
             images_after = self._extract_images(code_after)
@@ -152,7 +173,6 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
                 return True
 
         return False
-
     # -----------------------------
     # override base classifiers
     # -----------------------------

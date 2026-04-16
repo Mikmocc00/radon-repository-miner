@@ -167,7 +167,7 @@ class BaseMiner:
             if i == len(commit.modified_files) and commit.hash in commits:
                 commits.remove(commit.hash)
 
-    def get_fixing_commits(self, num_workers=8) -> Dict[str, List[str]]:
+    def get_fixing_commits(self, num_workers=1) -> Dict[str, List[str]]:
         """
         Return a list of bug-fixing commit hash, categorized as fixing "conditionals", "configuration data",
         "dependencies", "documentation", "idempotency", "security", "service", "syntax".
