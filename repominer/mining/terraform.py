@@ -6,7 +6,6 @@ from pydriller.domain.commit import ModificationType
 from repominer.mining.base import BaseMiner, FixingCommitClassifier
 
 
-# attributi poco rilevanti per bug fixing
 IGNORED_ATTRIBUTES = {
     "tags",
     "description",
@@ -17,7 +16,7 @@ IGNORED_ATTRIBUTES = {
 DATA_KEYS = ["variable", "locals", "output"]
 
 
-# Terraform bug keywords
+
 TERRAFORM_DEFECT_KEYWORDS = {
     "fix", "bug", "error", "issue", "fail",
     "failure", "crash", "incorrect", "wrong",
@@ -47,9 +46,6 @@ class TerraformMiner(BaseMiner):
 
 class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
-    # -----------------------------
-    # linguistic detection
-    # -----------------------------
 
     def _has_terraform_bug_pattern(self, sentence: str) -> bool:
 
@@ -64,9 +60,6 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return bool(re.search(r"(fix(e[sd])?|close[sd]?|resolve[sd]?)\s+#\d+", sentence.lower()))
 
-    # -----------------------------
-    # parsing
-    # -----------------------------
 
     def _parse_hcl(self, source):
 
@@ -78,9 +71,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
         except Exception:
             return {}
 
-    # -----------------------------
-    # extractors
-    # -----------------------------
+    
 
     def _extract_resources(self, parsed) -> Set[Tuple[str, str]]:
 
@@ -145,9 +136,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return data
 
-    # -----------------------------
-    # semantic change detection
-    # -----------------------------
+   
 
     def is_data_changed(self) -> bool:
 
@@ -242,9 +231,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return False
 
-    # -----------------------------
-    # semantic bug detection
-    # -----------------------------
+  
 
     def fixes_terraform_semantic(self) -> bool:
 
@@ -259,9 +246,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return False
 
-    # -----------------------------
-    # override base classifiers
-    # -----------------------------
+    
 
     def fixes_configuration_data(self):
 
