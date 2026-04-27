@@ -6,7 +6,7 @@ from typing import Set, Tuple
 from repominer import filters
 from repominer.mining.base import BaseMiner, FixingCommitClassifier
 
-# Kubernetes bug keywords
+
 KUBERNETES_DEFECT_KEYWORDS = {
     "fix", "bug", "error", "issue", "fail",
     "failure", "crash", "incorrect", "wrong",
@@ -39,9 +39,6 @@ class KubernetesMiner(BaseMiner):
 
 class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
-    # -----------------------------
-    # linguistic detection
-    # -----------------------------
 
     def _has_kubernetes_bug_pattern(self, sentence: str) -> bool:
         sentence = sentence.lower()
@@ -54,23 +51,17 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
     def _has_issue_reference(self, sentence: str) -> bool:
         return bool(re.search(r"(fix(e[sd])?|close[sd]?|resolve[sd]?)\s+#\d+", sentence.lower()))
 
-    # -----------------------------
-    # parsing
-    # -----------------------------
 
     def _parse_yaml_docs(self, source) -> list:
         """Parses multiple YAML documents from a single string/file."""
         if not source:
             return []
         try:
-            # list() converts the generator from safe_load_all to a list of dicts
+           
             return list(yaml.safe_load_all(source))
         except yaml.YAMLError:
             return []
 
-    # -----------------------------
-    # extractors
-    # -----------------------------
 
     def _extract_kinds(self, parsed_docs: list) -> Set[str]:
         """Extracts the 'kind' of all resources in the file."""
@@ -87,7 +78,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
             if not isinstance(doc, dict):
                 continue
 
-            # Simple recursive search for the 'image' key
+    
             def find_images(d):
                 if isinstance(d, dict):
                     for k, v in d.items():
@@ -102,13 +93,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
             find_images(doc)
         return images
 
-    # -----------------------------
-    # semantic change detection
-    # -----------------------------
 
-    # -----------------------------
-    # semantic change detection
-    # -----------------------------
 
     def is_service_changed(self) -> bool:
         """Checks if the actual structure or kind of the resource changed."""
@@ -119,15 +104,15 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            # FIX: Intercettiamo i file mancanti (sottomoduli, Git LFS o commit corrotti)
+            
             try:
                 source_code = modified_file.source_code
                 source_code_before = modified_file.source_code_before
             except ValueError:
-                # Se l'hash non viene risolto, ignoriamo il file e passiamo al prossimo
+                
                 continue
 
-            # Usa le variabili appena estratte al posto di richiamare le property
+           
             if not filters.is_kubernetes_file(path, source_code):
                 continue
 
@@ -151,15 +136,15 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            # FIX: Intercettiamo i file mancanti (sottomoduli, Git LFS o commit corrotti)
+            
             try:
                 source_code = modified_file.source_code
                 source_code_before = modified_file.source_code_before
             except ValueError:
-                # Se l'hash non viene risolto, ignoriamo il file e passiamo al prossimo
+                
                 continue
 
-            # Usa le variabili appena estratte al posto di richiamare le property
+            
             if not filters.is_kubernetes_file(path, source_code):
                 continue
 
@@ -173,9 +158,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
                 return True
 
         return False
-    # -----------------------------
-    # override base classifiers
-    # -----------------------------
+    
 
     def fixes_dependency(self):
         if self.is_dependency_changed():
