@@ -5,7 +5,7 @@ from pydriller.domain.commit import ModificationType
 from repominer import filters
 from repominer.mining.base import BaseMiner, FixingCommitClassifier
 
-# Docker bug keywords (Ampliato con sicurezza e permessi)
+
 DOCKER_DEFECT_KEYWORDS = {
     "fix", "bug", "error", "issue", "fail",
     "failure", "crash", "incorrect", "wrong",
@@ -34,9 +34,7 @@ class DockerMiner(BaseMiner):
 
 class DockerFixingCommitClassifier(FixingCommitClassifier):
 
-    # -----------------------------
-    # linguistic detection
-    # -----------------------------
+  
 
     def _has_docker_bug_pattern(self, sentence: str) -> bool:
         sentence = sentence.lower()
@@ -47,9 +45,7 @@ class DockerFixingCommitClassifier(FixingCommitClassifier):
     def _has_issue_reference(self, sentence: str) -> bool:
         return bool(re.search(r"(fix(e[sd])?|close[sd]?|resolve[sd]?)\s+#\d+", sentence.lower()))
 
-    # -----------------------------
-    # extractors
-    # -----------------------------
+  
 
     def _extract_base_images(self, source: str) -> Set[str]:
         """Extracts the base images from FROM instructions."""
@@ -78,9 +74,7 @@ class DockerFixingCommitClassifier(FixingCommitClassifier):
                     extracted.add(line)
         return extracted
 
-    # -----------------------------
-    # semantic change detection
-    # -----------------------------
+   
 
     def _has_file_changed_semantically(self, extractor_func, *args) -> bool:
         """Helper to avoid repeating the loop over modified_files."""
@@ -125,9 +119,6 @@ class DockerFixingCommitClassifier(FixingCommitClassifier):
         """Check if user execution context (USER) is modified."""
         return self._has_file_changed_semantically(self._extract_instructions, ['USER'])
 
-    # -----------------------------
-    # override base classifiers
-    # -----------------------------
 
     def fixes_dependency(self):
         if self.is_dependency_changed():
