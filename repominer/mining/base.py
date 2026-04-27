@@ -11,7 +11,7 @@ from repominer import utils
 from repominer.files import FixedFile, FailureProneFile
 from repominer.mining import rules
 
-# Important: downloading resources for NLTK
+
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
@@ -22,7 +22,6 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
-# Constants
 full_name_pattern = re.compile(r'(github|gitlab){1}\.com/([\w\W]+)$')
 
 
@@ -116,7 +115,7 @@ class BaseMiner:
         self.fixing_commits = list()
         self.fixed_files = list()
 
-        # Get all the repository commits sorted by commit date
+      
         self.commit_hashes = [c.hash for c in
                               Repository(
                                   path_to_repo=self.path_to_repo if os.path.isdir(self.path_to_repo) else url_to_repo,
@@ -150,12 +149,12 @@ class BaseMiner:
         self.sort_commits(commits)
 
         for commit in Repository(self.path_to_repo,
-                                 from_commit=commits[0],  # first commit in commits
-                                 to_commit=commits[-1],  # last commit in commits
+                                 from_commit=commits[0], 
+                                 to_commit=commits[-1],  
                                  only_in_branch=self.branch).traverse_commits():
             i = 0
 
-            # if none of the modified files is a Ansible file then discard the commit
+          
             while i < len(commit.modified_files):
                 if commit.modified_files[i].change_type != ModificationType.MODIFY:
                     i += 1
@@ -218,17 +217,17 @@ class BaseMiner:
                 commits.append(commit.hash)
 
         if commits:
-            # Discard commits that do not touch IaC files
+
             self.discard_undesired_fixing_commits(commits)
 
-            # Update the list of fixing commits
+           
             self.fixing_commits.extend(commits)
 
-            # Sort fixing_commits in ascending order of date
+          
             self.sort_commits(self.fixing_commits)
 
             for sha in list(commits_labels.keys()):
-                if sha not in commits:  # It means it was an undesired commit
+                if sha not in commits:  
                     del commits_labels[sha]
 
         return commits_labels
@@ -267,41 +266,35 @@ class BaseMiner:
                                            num_workers=1)
         else:
             repository_mining = Repository(self.path_to_repo,
-                                           from_commit=self.fixing_commits[-1],  # Last fixing-commit by date
-                                           to_commit=self.fixing_commits[0],  # First fixing-commit by date
+                                           from_commit=self.fixing_commits[-1],
+                                           to_commit=self.fixing_commits[0],  
                                            order='reverse',
                                            only_in_branch=self.branch,
                                            num_workers=1)
 
-        # Traverse commits from the latest to the first fixing-commit
+       
         for commit in repository_mining.traverse_commits():
 
             for modified_file in commit.modified_files:
 
-                # Not interested in ADDED and DELETED files
+              
                 if modified_file.change_type not in (ModificationType.MODIFY, ModificationType.RENAME):
                     continue
 
-                # If RENAMED then handle renaming
+              
                 if modified_file.change_type == ModificationType.RENAME:
-                    # if modified_file.new_path in renamed_files:
-                    #     renamed_files[modified_file.old_path] = renamed_files[modified_file.new_path]
-                    # else:
+            
                     renamed_files[modified_file.old_path] = renamed_files.get(modified_file.new_path,
                                                                               modified_file.new_path)
-                    # elif commit.hash in self.fixing_commits:
-                    #     renamed_files[modified_file.old_path] = modified_file.new_path
-
-                # This is to ensure that renamed files are tracked. Then, if the commit is not a fixing-commit then
-                # go to the next (previous commit in chronological order)
+                   
                 if commit.hash not in self.fixing_commits:
                     continue
 
-                # Not interested in type of files
+             
                 if self.ignore_file(modified_file.new_path, modified_file.source_code):
                     continue
 
-                # Identify bug-inducing commits. Dict[modified_file, Set[commit_hashes]]
+              
                 bug_inducing_commits = git_repo.get_commits_last_modified_lines(commit, modified_file)
 
                 if not bug_inducing_commits.get(modified_file.new_path):
@@ -309,7 +302,7 @@ class BaseMiner:
                 else:
                     bug_inducing_commits = list(bug_inducing_commits[modified_file.new_path])
                     self.sort_commits(bug_inducing_commits)
-                    bic = bug_inducing_commits[0]  # bic is the oldest bug-inducing-commit
+                    bic = bug_inducing_commits[0] 
 
                 current_fix = FixedFile(filepath=renamed_files.get(modified_file.new_path, modified_file.new_path),
                                         bic=bic,
@@ -321,9 +314,7 @@ class BaseMiner:
                     idx = self.fixed_files.index(current_fix)
                     existing_fix = self.fixed_files[idx]
 
-                    # If the current FIC is older than the existing bic, then save it as a new FixedFile.
-                    # Else it means the current fix is between the existing fix bic and fic.
-                    # If the current BIC is older than the existing bic, then update the bic.
+                   
                     if self.commit_hashes.index(current_fix.fic) < self.commit_hashes.index(existing_fix.bic):
 
                         if modified_file.new_path in renamed_files:
@@ -446,13 +437,13 @@ class FixingCommitClassifier:
             raise TypeError('Expected a pydriller.domain.commit.Commit object.')
 
         self.commit = commit
-        self.sentences = []  # will be list of tokens list
+        self.sentences = []  
 
         for sentence in nltk.sent_tokenize(commit.msg):
-            # split into words
+          
             tokens = nltk.tokenize.word_tokenize(sentence)
 
-            # remove all tokens that are not alphabetic
+            
             tokens = [word.strip() for word in tokens if word.isalpha()]
 
             self.sentences.append(tokens)
