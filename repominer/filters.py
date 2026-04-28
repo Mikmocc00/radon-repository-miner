@@ -21,7 +21,13 @@ def is_terraform_file(path: str, content: str = None) -> bool:
 
 
 def is_kubernetes_file(path: str, content: str = None) -> bool:
+<<<<<<< Updated upstream
     
+=======
+    """
+    Check whether the path is a Kubernetes file
+    """
+>>>>>>> Stashed changes
     if not path or 'test/' in path or not (path.endswith('.yaml') or path.endswith('.yml')):
         return False
 
@@ -34,6 +40,7 @@ def is_kubernetes_file(path: str, content: str = None) -> bool:
 
 
 def is_docker_file(path: str, content: str = None) -> bool:
+<<<<<<< Updated upstream
   
     if not path or 'test/' in path.lower():
         return False
@@ -42,3 +49,14 @@ def is_docker_file(path: str, content: str = None) -> bool:
     filename = path.split('/')[-1].lower()
 
     return filename == 'dockerfile' or filename.endswith('.dockerfile')
+=======
+    """
+    Check whether the path is a Docker file
+    """
+    if not path or 'test/' in path.lower():
+        return False
+
+    filename = path.split('/')[-1].lower()
+
+    return filename == 'dockerfile' or filename.endswith('.dockerfile')
+>>>>>>> Stashed changes

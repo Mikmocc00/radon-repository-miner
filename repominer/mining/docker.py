@@ -34,7 +34,7 @@ class DockerMiner(BaseMiner):
 
 class DockerFixingCommitClassifier(FixingCommitClassifier):
 
-  
+
 
     def _has_docker_bug_pattern(self, sentence: str) -> bool:
         sentence = sentence.lower()
@@ -45,7 +45,7 @@ class DockerFixingCommitClassifier(FixingCommitClassifier):
     def _has_issue_reference(self, sentence: str) -> bool:
         return bool(re.search(r"(fix(e[sd])?|close[sd]?|resolve[sd]?)\s+#\d+", sentence.lower()))
 
-  
+
 
     def _extract_base_images(self, source: str) -> Set[str]:
         """Extracts the base images from FROM instructions."""
@@ -74,7 +74,7 @@ class DockerFixingCommitClassifier(FixingCommitClassifier):
                     extracted.add(line)
         return extracted
 
-   
+
 
     def _has_file_changed_semantically(self, extractor_func, *args) -> bool:
         """Helper to avoid repeating the loop over modified_files."""

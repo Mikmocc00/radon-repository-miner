@@ -11,14 +11,11 @@ METRICS_TO_COMPUTE = (
     'avg_run_commands_per_layer',
     'num_from_instructions',
     'num_copy_instructions',
+    'lines_blank',
     'num_hardcoded_ips',
     'num_pinned_versions',
     'num_layers',
-    'num_exposed_ports',
-    'num_run_instructions',
-    'num_secrets_in_env',
-    'num_suspicious_comments',
-    'dockerfile_lines'
+    'num_exposed_ports'
 )
 
 class DockerMetricsExtractor(BaseMetricsExtractor):

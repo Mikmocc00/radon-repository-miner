@@ -57,7 +57,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
         if not source:
             return []
         try:
-           
+
             return list(yaml.safe_load_all(source))
         except yaml.YAMLError:
             return []
@@ -78,7 +78,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
             if not isinstance(doc, dict):
                 continue
 
-    
+
             def find_images(d):
                 if isinstance(d, dict):
                     for k, v in d.items():
@@ -104,15 +104,15 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            
+
             try:
                 source_code = modified_file.source_code
                 source_code_before = modified_file.source_code_before
             except ValueError:
-                
+
                 continue
 
-           
+
             if not filters.is_kubernetes_file(path, source_code):
                 continue
 
@@ -136,15 +136,15 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
 
             path = modified_file.new_path or modified_file.old_path
 
-            
+
             try:
                 source_code = modified_file.source_code
                 source_code_before = modified_file.source_code_before
             except ValueError:
-                
+
                 continue
 
-            
+
             if not filters.is_kubernetes_file(path, source_code):
                 continue
 
@@ -158,7 +158,7 @@ class KubernetesFixingCommitClassifier(FixingCommitClassifier):
                 return True
 
         return False
-    
+
 
     def fixes_dependency(self):
         if self.is_dependency_changed():

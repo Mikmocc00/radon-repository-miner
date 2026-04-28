@@ -71,7 +71,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
         except Exception:
             return {}
 
-    
+
 
     def _extract_resources(self, parsed) -> Set[Tuple[str, str]]:
 
@@ -136,7 +136,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return data
 
-   
+
 
     def is_data_changed(self) -> bool:
 
@@ -231,7 +231,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return False
 
-  
+
 
     def fixes_terraform_semantic(self) -> bool:
 
@@ -246,7 +246,7 @@ class TerraformFixingCommitClassifier(FixingCommitClassifier):
 
         return False
 
-    
+
 
     def fixes_configuration_data(self):
 

@@ -11,20 +11,15 @@ METRICS_TO_COMPUTE = (
     'num_labels',
     'num_total_fields',
     'nested_object_ratio',
-    'num_resources',
-    'num_tolerations',
     'manifest_structural_complexity',
-    'num_persistent_volumes',
+    'num_resources',
     'num_configmaps',
+    'num_persistent_volumes',
+    'num_tolerations',
     'num_affinity_rules',
     'num_node_selectors',
     'num_ports',
-    'num_resource_limits',
-    'num_containers',
-    'num_hardcoded_values',
-    'num_image_pull_policy_always',
-    'num_latest_tag',
-    'num_capabilities_added'
+    'num_resource_limits'
 )
 
 class KubernetesMetricsExtractor(BaseMetricsExtractor):
