@@ -1,25 +1,20 @@
 from .base import BaseMetricsExtractor
-from repominer.filters import is_terraform_file
 from radon_terraform_metrics.import_metrics import general_metrics, configuration_metrics, complex_metrics
 
 METRICS_TO_COMPUTE = (
-
-   "text_entropy",
-   "lines_code",
-   "num_keys",
-   "coupling_score",
-   "resource_density",
-   "implicit_dependencies",
-   "key_density",
-   "vocabulary_richness",
-   "variable_reference_count",
-   "resource_concentration",
-   "num_resources",
-   "module_fan_in",
-   "avg_block_verbosity",
-   "max_resources_per_file",
-   "lines_comment",
-
+    'text_entropy',
+    'num_keys',
+    'vocabulary_richness',
+    'lines_code',
+    'module_fan_in',
+    'implicit_dependencies',
+    'num_conditionals',
+    'resource_type_diversity',
+    'variable_reference_count',
+    'coupling_score',
+    'resource_density',
+    'dynamic_complexity',
+    'avg_block_verbosity'
 )
 
 class TerraformMetricsExtractor(BaseMetricsExtractor):
