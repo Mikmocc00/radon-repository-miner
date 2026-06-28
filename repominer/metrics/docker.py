@@ -4,18 +4,24 @@ from repominer.filters import is_docker_file
 from radon_docker_metrics.import_metrics import general_metrics, docker_metrics
 
 METRICS_TO_COMPUTE = (
-    'num_args',
-    'num_volumes',
     'runs_as_root',
-    'has_entrypoint',
+    'num_volumes',
     'avg_run_commands_per_layer',
+    'attack_surface',
+    'parameterization_density',
+    'num_args',
+    'has_entrypoint',
+    'text_entropy',
+    'num_exposed_ports',
     'num_from_instructions',
+    'dockerfile_lines',
+    'security_density',
     'num_copy_instructions',
-    'lines_blank',
-    'num_hardcoded_ips',
-    'num_pinned_versions',
-    'num_layers',
-    'num_exposed_ports'
+    'num_keys',
+    'reproducibility_risk',
+    'num_unpinned_versions',
+    'config_entropy_ratio',
+    'num_hardcoded_ips'
 )
 
 class DockerMetricsExtractor(BaseMetricsExtractor):

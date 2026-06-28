@@ -6,20 +6,21 @@ from pydriller import Repository, ModificationType
 from radon_kubernetes_metrics.utils import ParsedManifest
 
 METRICS_TO_COMPUTE = (
-    'config_entropy',
-    'avg_fields_per_resource',
-    'num_labels',
-    'num_total_fields',
+    'kubernetes_risk_index',
     'nested_object_ratio',
+    'config_entropy',
+    'manifest_complexity_ratio',
     'manifest_structural_complexity',
+    'field_entropy',
+    'avg_fields_per_resource',
+    'nesting_pressure',
+    'num_labels',
+    'num_kinds',
+    'label_annotation_ratio',
+    'observability_score',
+    'num_duplicate_names',
     'num_resources',
-    'num_configmaps',
-    'num_persistent_volumes',
-    'num_tolerations',
-    'num_affinity_rules',
-    'num_node_selectors',
-    'num_ports',
-    'num_resource_limits'
+    'num_deprecated_api_versions'
 )
 
 class KubernetesMetricsExtractor(BaseMetricsExtractor):
